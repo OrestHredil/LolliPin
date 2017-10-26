@@ -1,1 +1,1 @@
-include ':app', ':lib', ':realm-storage'
+include ':material-pin-example', ':material-pin', ':material-pin-realm'

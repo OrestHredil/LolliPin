@@ -191,7 +191,7 @@ The Pin Dots:
 By supplying alternate drawable resources for app:lp_empty_pin_dot and app:lp_full_pin_dot you can custimize how it looks.
 
 ```
-<com.github.orangegangsters.lollipin.lib.views.PinCodeRoundView
+<com.dewarder.materialpin.views.PinCodeRoundView
                 android:id="@+id/pin_code_round_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

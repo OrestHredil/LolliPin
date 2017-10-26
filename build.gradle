@@ -1,12 +1,22 @@
 buildscript {
+
+    //project config
     ext {
-        support_library_version = "26.0.2"
+        min_sdk_version = 14
+        sdk_version = 26
+        build_tool_version = "26.0.2"
     }
+
+    //libraries version
+    ext {
+        support_library_version = "26.1.0"
+    }
+
     repositories {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.1'
+        classpath 'com.android.tools.build:gradle:3.0.0'
         classpath "io.realm:realm-gradle-plugin:3.1.4"
     }
 }
