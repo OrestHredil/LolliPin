@@ -1,10 +1,12 @@
 package com.dewarder.materialpin.managers;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
@@ -13,15 +15,18 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.dewarder.materialpin.PinActivity;
-import com.github.lollipin.lib.R;
-import com.dewarder.materialpin.enums.KeyboardButtonEnum;
-import com.dewarder.materialpin.interfaces.KeyboardButtonClickedListener;
+import com.dewarder.materialpin.DefaultConstants;
+import com.dewarder.materialpin.PinManager;
+import com.dewarder.materialpin.PinState;
+import com.dewarder.materialpin.enums.KeyboardButton;
+import com.dewarder.materialpin.interfaces.OnKeyboardButtonClickListener;
 import com.dewarder.materialpin.views.KeyboardView;
 import com.dewarder.materialpin.views.PinCodeRoundView;
+import com.github.lollipin.lib.R;
 
-import java.util.Arrays;
-import java.util.List;
+import static com.dewarder.materialpin.PinState.CONFIRM;
+import static com.dewarder.materialpin.PinState.ENABLE;
+import static com.dewarder.materialpin.PinState.UNLOCK;
 
 /**
  * Created by stoyan and olivier on 1/13/15.
@@ -29,10 +34,13 @@ import java.util.List;
  * Call this activity in normal or singleTop mode (not singleTask or singleInstance, it does not work
  * with {@link android.app.Activity#startActivityForResult(android.content.Intent, int)}).
  */
-public abstract class AppLockActivity extends PinActivity implements KeyboardButtonClickedListener, View.OnClickListener, FingerprintUiHelper.Callback {
+public class AppLockActivity extends Activity implements OnKeyboardButtonClickListener, View.OnClickListener, FingerprintUiHelper.Callback {
 
     public static final String TAG = AppLockActivity.class.getSimpleName();
     public static final String ACTION_CANCEL = TAG + ".actionCancelled";
+
+    private static final String EXTRA_PIN_STATE = "EXTRA_PIN_STATE";
+    private static final String EMPTY_PIN_CODE = "";
     private static final int DEFAULT_PIN_LENGTH = 4;
 
     protected TextView mStepTextView;
@@ -43,16 +51,15 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
     protected TextView mFingerprintTextView;
 
     protected LockManager mLockManager;
+    protected PinManager mPinManager;
 
     protected FingerprintManager mFingerprintManager;
     protected FingerprintUiHelper mFingerprintUiHelper;
 
-    protected int mType = AppLock.UNLOCK_PIN;
+    protected PinState mState = UNLOCK;
     protected int mAttempts = 0;
-    protected String mPinCode;
-
-    protected String mOldPinCode;
-
+    protected String mPinCode = EMPTY_PIN_CODE;
+    protected String mOldPinCode = EMPTY_PIN_CODE;
     private boolean isCodeSuccessful = false;
 
     /**
@@ -91,36 +98,32 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
         }
     }
 
-    /**
-     * Init completely the layout, depending of the extra {@link com.dewarder.materialpin.managers.AppLock#EXTRA_TYPE}
-     */
     private void initLayout(Intent intent) {
         overridePendingTransition(R.anim.nothing, R.anim.nothing);
 
         Bundle extras = intent.getExtras();
         if (extras != null) {
-            mType = extras.getInt(AppLock.EXTRA_TYPE, AppLock.UNLOCK_PIN);
+            mState = (PinState) extras.getSerializable(EXTRA_PIN_STATE);
         }
 
-        mLockManager = LockManager.getInstance();
-        mPinCode = "";
-        mOldPinCode = "";
+        mLockManager = MaterialPin.getLockManager();
+        mPinManager = mLockManager.getPinManager();
 
         enableAppLockerIfDoesNotExist();
-        mLockManager.getAppLock().setPinChallengeCancelled(false);
-        mAttempts = mLockManager.getAppLock().getAttemptsCount();
+        //mLockManager.getAppLock().setPinChallengeCancelled(false);
+        //mAttempts = mLockManager.getAppLock().getAttemptsCount();
 
-        mStepTextView = (TextView) this.findViewById(R.id.pin_code_step_textview);
-        mPinCodeRoundView = (PinCodeRoundView) this.findViewById(R.id.pin_code_round_view);
-        mPinCodeRoundView.setPinLength(this.getPinLength());
-        mForgotTextView = (TextView) this.findViewById(R.id.pin_code_forgot_textview);
+        mStepTextView = findViewById(R.id.pin_code_step_textview);
+        mPinCodeRoundView = findViewById(R.id.pin_code_round_view);
+        mPinCodeRoundView.setPinLength(getPinLength());
+        mForgotTextView = findViewById(R.id.pin_code_forgot_textview);
         mForgotTextView.setOnClickListener(this);
-        mKeyboardView = (KeyboardView) this.findViewById(R.id.pin_code_keyboard_view);
+        mKeyboardView = findViewById(R.id.pin_code_keyboard_view);
         mKeyboardView.setKeyboardButtonClickedListener(this);
 
-        int logoId = mLockManager.getAppLock().getLogoId();
-        ImageView logoImage = ((ImageView) findViewById(R.id.pin_code_logo_imageview));
-        if (logoId != AppLock.LOGO_ID_NONE) {
+        int logoId = DefaultConstants.LOGO_ID_NONE;
+        ImageView logoImage = findViewById(R.id.pin_code_logo_imageview);
+        if (logoId != DefaultConstants.LOGO_ID_NONE) {
             logoImage.setVisibility(View.VISIBLE);
             logoImage.setImageResource(logoId);
         }
@@ -135,14 +138,14 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
      * and {@link FingerprintManager#isHardwareDetected()}.
      */
     private void initLayoutForFingerprint() {
-        mFingerprintImageView = (ImageView) this.findViewById(R.id.pin_code_fingerprint_imageview);
-        mFingerprintTextView = (TextView) this.findViewById(R.id.pin_code_fingerprint_textview);
-        if (mType == AppLock.UNLOCK_PIN && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        mFingerprintImageView = findViewById(R.id.pin_code_fingerprint_imageview);
+        mFingerprintTextView = findViewById(R.id.pin_code_fingerprint_textview);
+        if (mState == UNLOCK && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             mFingerprintManager = (FingerprintManager) getSystemService(Context.FINGERPRINT_SERVICE);
             mFingerprintUiHelper = new FingerprintUiHelper.FingerprintUiHelperBuilder(mFingerprintManager).build(mFingerprintImageView, mFingerprintTextView, this);
             try {
                 if (mFingerprintManager.isHardwareDetected() && mFingerprintUiHelper.isFingerprintAuthAvailable()
-                        && mLockManager.getAppLock().isFingerprintAuthEnabled()) {
+                        ) {  //TODO: && mLockManager.getAppLock().isFingerprintAuthEnabled()) {
                     mFingerprintImageView.setVisibility(View.VISIBLE);
                     mFingerprintTextView.setVisibility(View.VISIBLE);
                     mFingerprintUiHelper.startListening();
@@ -161,54 +164,19 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
         }
     }
 
-    /**
-     * Re enable {@link AppLock} if it has been collected to avoid
-     * {@link NullPointerException}.
-     */
-    @SuppressWarnings("unchecked")
     private void enableAppLockerIfDoesNotExist() {
         try {
-            if (mLockManager.getAppLock() == null) {
+            /*TODO: if (mLockManager.getAppLock() == null) {
                 mLockManager.enableAppLock(this, getCustomAppLockActivityClass());
-            }
+            }*/
         } catch (Exception e) {
             Log.e(TAG, e.toString());
         }
     }
 
-    /**
-     * Init the {@link #mStepTextView} based on {@link #mType}
-     */
     private void setStepText() {
-        mStepTextView.setText(getStepText(mType));
-    }
-
-    /**
-     * Gets the {@link String} to be used in the {@link #mStepTextView} based on {@link #mType}
-     *
-     * @param reason The {@link #mType} to return a {@link String} for
-     * @return The {@link String} for the {@link AppLockActivity}
-     */
-    public String getStepText(int reason) {
-        String msg = null;
-        switch (reason) {
-            case AppLock.DISABLE_PINLOCK:
-                msg = getString(R.string.pin_code_step_disable, this.getPinLength());
-                break;
-            case AppLock.ENABLE_PINLOCK:
-                msg = getString(R.string.pin_code_step_create, this.getPinLength());
-                break;
-            case AppLock.CHANGE_PIN:
-                msg = getString(R.string.pin_code_step_change, this.getPinLength());
-                break;
-            case AppLock.UNLOCK_PIN:
-                msg = getString(R.string.pin_code_step_unlock, this.getPinLength());
-                break;
-            case AppLock.CONFIRM_PIN:
-                msg = getString(R.string.pin_code_step_enable_confirm, this.getPinLength());
-                break;
-        }
-        return msg;
+        mStepTextView.setText(
+                getString(mState.getStepDescription(), getPinLength()));
     }
 
     public String getForgotText() {
@@ -216,7 +184,7 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
     }
 
     private void setForgotTextVisibility() {
-        mForgotTextView.setVisibility(mLockManager.getAppLock().shouldShowForgot(mType) ? View.VISIBLE : View.GONE);
+        //TODO:   mForgotTextView.setVisibility(mLockManager.getAppLock().shouldShowForgot(mType) ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -229,10 +197,10 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
         //If code successful, reset the timer
         if (isCodeSuccessful) {
             if (mLockManager != null) {
-                AppLock appLock = mLockManager.getAppLock();
+/*                AppLock appLock = null;//TODO: mLockManager.getAppLock();
                 if (appLock != null) {
                     appLock.setLastActiveMillis();
-                }
+                }*/
             }
         }
 
@@ -244,18 +212,16 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
      * Refreshes also the {@link com.dewarder.materialpin.views.PinCodeRoundView}
      */
     @Override
-    public void onKeyboardClick(KeyboardButtonEnum keyboardButtonEnum) {
-        if (mPinCode.length() < this.getPinLength()) {
-            int value = keyboardButtonEnum.getButtonValue();
-
-            if (value == KeyboardButtonEnum.BUTTON_CLEAR.getButtonValue()) {
+    public void onKeyboardButtonClicked(@NonNull KeyboardButton button) {
+        if (mPinCode.length() < getPinLength()) {
+            if (button == KeyboardButton.BUTTON_CLEAR) {
                 if (!mPinCode.isEmpty()) {
                     setPinCode(mPinCode.substring(0, mPinCode.length() - 1));
                 } else {
-                    setPinCode("");
+                    setPinCode(EMPTY_PIN_CODE);
                 }
             } else {
-                setPinCode(mPinCode + value);
+                setPinCode(mPinCode + button.getValue());
             }
         }
     }
@@ -266,69 +232,87 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
      */
     @Override
     public void onRippleAnimationEnd() {
-        if (mPinCode.length() == this.getPinLength()) {
+        if (mPinCode.length() == getPinLength()) {
             onPinCodeInputed();
         }
     }
 
-    /**
-     * Switch over the {@link #mType} to determine if the password is ok, if we should pass to the next step etc...
-     */
+    protected void handleDisableState() {
+        if (!mPinManager.checkPin(mPinCode)) {
+            onPinCodeError();
+            return;
+        }
+
+        mPinManager.clearPin();
+        onPinCodeSuccess();
+        setResult(RESULT_OK);
+        finish();
+    }
+
+    protected void handleEnableState() {
+        mOldPinCode = mPinCode;
+        setPinCode(EMPTY_PIN_CODE);
+        mState = CONFIRM;
+        setStepText();
+        setForgotTextVisibility();
+    }
+
+    protected void handleConfirmState() {
+        if (mPinCode.equals(mOldPinCode)) {
+            mPinManager.setPin(mPinCode);
+            onPinCodeSuccess();
+            setResult(RESULT_OK);
+            finish();
+        } else {
+            mOldPinCode = EMPTY_PIN_CODE;
+            setPinCode(EMPTY_PIN_CODE);
+            mState = ENABLE;
+            setStepText();
+            setForgotTextVisibility();
+            onPinCodeError();
+        }
+    }
+
+    protected void handleChangeState() {
+        if (!mPinManager.checkPin(mPinCode)) {
+            onPinCodeError();
+            return;
+        }
+
+        mState = ENABLE;
+        setStepText();
+        setForgotTextVisibility();
+        setPinCode(EMPTY_PIN_CODE);
+        onPinCodeSuccess();
+    }
+
+    protected void handleUnlockState() {
+        if (!mPinManager.checkPin(mPinCode)) {
+            onPinCodeError();
+            return;
+        }
+
+        onPinCodeSuccess();
+        setResult(RESULT_OK);
+        finish();
+    }
+
     protected void onPinCodeInputed() {
-        switch (mType) {
-            case AppLock.DISABLE_PINLOCK:
-                if (mLockManager.getAppLock().checkPasscode(mPinCode)) {
-                    setResult(RESULT_OK);
-                    mLockManager.getAppLock().setPasscode(null);
-                    onPinCodeSuccess();
-                    finish();
-                } else {
-                    onPinCodeError();
-                }
+        switch (mState) {
+            case DISABLE:
+                handleDisableState();
                 break;
-            case AppLock.ENABLE_PINLOCK:
-                mOldPinCode = mPinCode;
-                setPinCode("");
-                mType = AppLock.CONFIRM_PIN;
-                setStepText();
-                setForgotTextVisibility();
+            case ENABLE:
+                handleEnableState();
                 break;
-            case AppLock.CONFIRM_PIN:
-                if (mPinCode.equals(mOldPinCode)) {
-                    setResult(RESULT_OK);
-                    mLockManager.getAppLock().setPasscode(mPinCode);
-                    onPinCodeSuccess();
-                    finish();
-                } else {
-                    mOldPinCode = "";
-                    setPinCode("");
-                    mType = AppLock.ENABLE_PINLOCK;
-                    setStepText();
-                    setForgotTextVisibility();
-                    onPinCodeError();
-                }
+            case CONFIRM:
+                handleConfirmState();
                 break;
-            case AppLock.CHANGE_PIN:
-                if (mLockManager.getAppLock().checkPasscode(mPinCode)) {
-                    mType = AppLock.ENABLE_PINLOCK;
-                    setStepText();
-                    setForgotTextVisibility();
-                    setPinCode("");
-                    onPinCodeSuccess();
-                } else {
-                    onPinCodeError();
-                }
+            case CHANGE:
+                handleChangeState();
                 break;
-            case AppLock.UNLOCK_PIN:
-                if (mLockManager.getAppLock().checkPasscode(mPinCode)) {
-                    setResult(RESULT_OK);
-                    onPinCodeSuccess();
-                    finish();
-                } else {
-                    onPinCodeError();
-                }
-                break;
-            default:
+            case UNLOCK:
+                handleUnlockState();
                 break;
         }
     }
@@ -338,9 +322,9 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
      */
     @Override
     public void onBackPressed() {
-        if (getBackableTypes().contains(mType)) {
-            if (AppLock.UNLOCK_PIN == getType()) {
-                mLockManager.getAppLock().setPinChallengeCancelled(true);
+        if (mState.canBack()) {
+            if (mState == UNLOCK) {
+                //TODO: mLockManager.getAppLock().setPinChallengeCancelled(true);
                 LocalBroadcastManager
                         .getInstance(this)
                         .sendBroadcast(new Intent().setAction(ACTION_CANCEL));
@@ -363,45 +347,33 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
     }
 
     /**
-     * Gets the list of {@link AppLock} types that are acceptable to be backed out of using
-     * the device's back button
-     *
-     * @return an {@link List<Integer>} of {@link AppLock} types which are backable
-     */
-    public List<Integer> getBackableTypes() {
-        return Arrays.asList(AppLock.CHANGE_PIN, AppLock.DISABLE_PINLOCK);
-    }
-
-    /**
      * Displays the information dialog when the user clicks the
      * {@link #mForgotTextView}
      */
-    public abstract void showForgotDialog();
+    public void showForgotDialog() {
+
+    }
 
     /**
      * Run a shake animation when the password is not valid.
      */
     protected void onPinCodeError() {
-        mAttempts = mLockManager.getAppLock().incrementAttemptsCountAndGet();
+        mAttempts = mLockManager.getPinManager().incrementAttemptsCountAndGet();
         onPinFailure(mAttempts);
-        Runnable thread = new Runnable() {
-            @Override
-            public void run() {
-                mPinCode = "";
-                mPinCodeRoundView.refresh(mPinCode.length());
-                Animation animation = AnimationUtils.loadAnimation(
-                        AppLockActivity.this, R.anim.shake);
-                mKeyboardView.startAnimation(animation);
-            }
-        };
-        runOnUiThread(thread);
+        runOnUiThread(() -> {
+            mPinCode = "";
+            mPinCodeRoundView.refresh(mPinCode.length());
+            Animation animation = AnimationUtils.loadAnimation(
+                    AppLockActivity.this, R.anim.shake);
+            mKeyboardView.startAnimation(animation);
+        });
     }
 
     protected void onPinCodeSuccess() {
         isCodeSuccessful = true;
         onPinSuccess(mAttempts + 1);
         mAttempts = 0;
-        mLockManager.getAppLock().resetAttemptsCount();
+        mLockManager.getPinManager().resetAttemptsCount();
     }
 
     /**
@@ -410,14 +382,6 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
     public void setPinCode(String pinCode) {
         mPinCode = pinCode;
         mPinCodeRoundView.refresh(mPinCode.length());
-    }
-
-
-    /**
-     * Returns the type of this {@link com.dewarder.materialpin.managers.AppLockActivity}
-     */
-    public int getType() {
-        return mType;
     }
 
     /**
@@ -436,14 +400,18 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
      *
      * @param attempts the number of attempts the user has used
      */
-    public abstract void onPinFailure(int attempts);
+    public void onPinFailure(int attempts) {
+
+    }
 
     /**
      * When the user has succeeded at a pin challenge
      *
      * @param attempts the number of attempts the user had used
      */
-    public abstract void onPinSuccess(int attempts);
+    public void onPinSuccess(int attempts) {
+
+    }
 
     /**
      * Gets the resource id to the {@link View} to be set with {@link #setContentView(int)}.
@@ -467,15 +435,5 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
      */
     public int getPinLength() {
         return AppLockActivity.DEFAULT_PIN_LENGTH;
-    }
-
-    /**
-     * Get the current class extending {@link AppLockActivity} to re-enable {@link AppLock}
-     * in case it has been collected
-     *
-     * @return the current class extending {@link AppLockActivity}
-     */
-    public Class<? extends AppLockActivity> getCustomAppLockActivityClass() {
-        return this.getClass();
     }
 }

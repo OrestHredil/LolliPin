@@ -1,14 +1,15 @@
 package com.dewarder.materialpin;
 
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import com.dewarder.materialpin.PinCompatActivity;
+
 import lollipin.orangegangsters.github.com.lollipin.R;
 
 /**
  * Created by callmepeanut on 16-1-14.
  */
-public class LockedCompatActivity extends PinCompatActivity{
+public class LockedCompatActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

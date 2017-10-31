@@ -3,9 +3,7 @@ package com.dewarder.materialpin.storage;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.dewarder.materialpin.enums.Algorithm;
-
-public interface PasscodeDataStorage {
+public interface PinDataStorage {
 
     int readAttemptsCount();
 
@@ -17,18 +15,13 @@ public interface PasscodeDataStorage {
     void writeSalt(@Nullable String salt);
 
     @NonNull
-    Algorithm readCurrentAlgorithm();
-
-    void writeCurrentAlgorithm(@NonNull Algorithm algorithm);
-
-    @NonNull
     String readPasscode();
 
-    void writePasscode(@NonNull String passcode);
+    void writePin(@NonNull String pin);
 
-    boolean hasPasscode();
+    boolean hasPin();
 
-    void clearPasscode();
+    void clearPin();
 
     void clear();
 }

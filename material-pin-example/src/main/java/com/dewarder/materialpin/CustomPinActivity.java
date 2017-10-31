@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
+import android.view.ViewPropertyAnimator;
 import android.widget.Toast;
 
 import com.dewarder.materialpin.managers.AppLockActivity;
@@ -65,7 +66,6 @@ public class CustomPinActivity extends AppLockActivity {
 
     @Override
     public void onPinFailure(int attempts) {
-
     }
 
     @Override

@@ -6,10 +6,9 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.dewarder.materialpin.enums.Algorithm;
-import com.dewarder.materialpin.storage.PasscodeDataStorage;
+import com.dewarder.materialpin.storage.PinDataStorage;
 
-public class DefaultPreferencesPasscodeDataStorage implements PasscodeDataStorage {
+public class DefaultPreferencesPinDataStorage implements PinDataStorage {
 
     private static final String ATTEMPTS_COUNT_PREFERENCE_KEY = "ATTEMPTS_COUNT_PREFERENCE_KEY";
     /**
@@ -20,14 +19,10 @@ public class DefaultPreferencesPasscodeDataStorage implements PasscodeDataStorag
      * The {@link android.content.SharedPreferences} key used to store the password
      */
     private static final String PASSWORD_PREFERENCE_KEY = "PASSCODE";
-    /**
-     * The {@link android.content.SharedPreferences} key used to store the {@link Algorithm}
-     */
-    private static final String PASSWORD_ALGORITHM_PREFERENCE_KEY = "ALGORITHM";
 
     private final SharedPreferences mPreferences;
 
-    public DefaultPreferencesPasscodeDataStorage(Context context) {
+    public DefaultPreferencesPinDataStorage(Context context) {
         mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
@@ -58,38 +53,24 @@ public class DefaultPreferencesPasscodeDataStorage implements PasscodeDataStorag
 
     @NonNull
     @Override
-    public Algorithm readCurrentAlgorithm() {
-        return Algorithm.getFromText(
-                mPreferences.getString(PASSWORD_ALGORITHM_PREFERENCE_KEY, null));
-    }
-
-    @Override
-    public void writeCurrentAlgorithm(@NonNull Algorithm algorithm) {
-        mPreferences.edit()
-                .putString(PASSWORD_ALGORITHM_PREFERENCE_KEY, algorithm.getValue())
-                .apply();
-    }
-
-    @NonNull
-    @Override
     public String readPasscode() {
         return mPreferences.getString(PASSWORD_PREFERENCE_KEY, "");
     }
 
     @Override
-    public void writePasscode(@NonNull String passcode) {
+    public void writePin(@NonNull String passcode) {
         mPreferences.edit()
                 .putString(PASSWORD_PREFERENCE_KEY, passcode)
                 .apply();
     }
 
     @Override
-    public boolean hasPasscode() {
+    public boolean hasPin() {
         return mPreferences.contains(PASSWORD_PREFERENCE_KEY);
     }
 
     @Override
-    public void clearPasscode() {
+    public void clearPin() {
         mPreferences.edit()
                 .remove(PASSWORD_PREFERENCE_KEY)
                 .apply();
@@ -100,7 +81,6 @@ public class DefaultPreferencesPasscodeDataStorage implements PasscodeDataStorag
         mPreferences.edit()
                 .remove(PASSWORD_SALT_PREFERENCE_KEY)
                 .remove(PASSWORD_PREFERENCE_KEY)
-                .remove(PASSWORD_ALGORITHM_PREFERENCE_KEY)
                 .apply();
     }
 }

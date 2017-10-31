@@ -1,12 +1,12 @@
 package com.dewarder.materialpin.encryption;
 
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.dewarder.materialpin.enums.Algorithm;
 import com.dewarder.materialpin.managers.DefaultAppLock;
 
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
 /**
@@ -23,23 +23,18 @@ public final class Encryptor {
      * Allows to get the SHA of a {@link java.lang.String} using {@link java.security.MessageDigest}
      * if device does not support sha-256, fall back to sha-1 instead
      */
-    @Nullable
-    public static String getSHA(String text, Algorithm algorithm) {
+    @NonNull
+    public static String getSHA(String text) {
         String sha = "";
         if (TextUtils.isEmpty(text)) {
             return sha;
         }
 
-        MessageDigest shaDigest = getShaDigest(algorithm);
-
-        if (shaDigest != null) {
-            byte[] textBytes = text.getBytes();
-            shaDigest.update(textBytes, 0, text.length());
-            byte[] shahash = shaDigest.digest();
-            return bytes2Hex(shahash);
-        }
-
-        return null;
+        MessageDigest shaDigest = getShaDigest();
+        byte[] textBytes = text.getBytes();
+        shaDigest.update(textBytes, 0, text.length());
+        byte[] shahash = shaDigest.digest();
+        return bytes2Hex(shahash);
     }
 
     /**
@@ -49,17 +44,17 @@ public final class Encryptor {
      * @return The converted String
      */
     private static String bytes2Hex(byte[] bytes) {
-        String hs = "";
+        StringBuilder hs = new StringBuilder();
         String stmp = "";
-        for (int n = 0; n < bytes.length; n++) {
-            stmp = (Integer.toHexString(bytes[n] & 0XFF));
+        for (byte aByte : bytes) {
+            stmp = (Integer.toHexString(aByte & 0XFF));
             if (stmp.length() == 1) {
-                hs += "0" + stmp;
+                hs.append("0").append(stmp);
             } else {
-                hs += stmp;
+                hs.append(stmp);
             }
         }
-        return hs.toLowerCase(Locale.ENGLISH);
+        return hs.toString().toLowerCase(Locale.ENGLISH);
     }
 
     /**
@@ -69,25 +64,15 @@ public final class Encryptor {
      *
      * @param algorithm The {@link Algorithm} to use
      */
-    private static MessageDigest getShaDigest(Algorithm algorithm) {
-        switch (algorithm) {
-            case SHA256:
-                try {
-                    return MessageDigest.getInstance("SHA-256");
-                } catch (Exception e) {
-                    try {
-                        return MessageDigest.getInstance("SHA-1");
-                    } catch (Exception e2) {
-                        return null;
-                    }
-                }
-            case SHA1:
-            default:
-                try {
-                    return MessageDigest.getInstance("SHA-1");
-                } catch (Exception e2) {
-                    return null;
-                }
+    private static MessageDigest getShaDigest() {
+        try {
+            return MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            try {
+                return MessageDigest.getInstance("SHA-1");
+            } catch (NoSuchAlgorithmException e1) {
+                throw new RuntimeException(e1);
+            }
         }
     }
 }

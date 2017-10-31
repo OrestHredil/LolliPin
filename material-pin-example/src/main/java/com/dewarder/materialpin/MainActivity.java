@@ -2,16 +2,18 @@ package com.dewarder.materialpin;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
-import com.dewarder.materialpin.PinActivity;
-import com.dewarder.materialpin.managers.AppLock;
-
 import lollipin.orangegangsters.github.com.lollipin.R;
 
+import static com.dewarder.materialpin.PinState.CHANGE;
+import static com.dewarder.materialpin.PinState.ENABLE;
+import static com.dewarder.materialpin.PinState.UNLOCK;
 
-public class MainActivity extends PinActivity implements View.OnClickListener {
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int REQUEST_CODE_ENABLE = 11;
 
@@ -32,15 +34,15 @@ public class MainActivity extends PinActivity implements View.OnClickListener {
         Intent intent = new Intent(MainActivity.this, CustomPinActivity.class);
         switch (v.getId()) {
             case R.id.button_enable_pin:
-                intent.putExtra(AppLock.EXTRA_TYPE, AppLock.ENABLE_PINLOCK);
+                intent.putExtra("EXTRA_PIN_STATE", ENABLE);
                 startActivityForResult(intent, REQUEST_CODE_ENABLE);
                 break;
             case R.id.button_change_pin:
-                intent.putExtra(AppLock.EXTRA_TYPE, AppLock.CHANGE_PIN);
+                intent.putExtra("EXTRA_PIN_STATE", CHANGE);
                 startActivity(intent);
                 break;
             case R.id.button_unlock_pin:
-                intent.putExtra(AppLock.EXTRA_TYPE, AppLock.UNLOCK_PIN);
+                intent.putExtra("EXTRA_PIN_STATE", UNLOCK);
                 startActivity(intent);
                 break;
             case R.id.button_compat_locked:
@@ -57,7 +59,7 @@ public class MainActivity extends PinActivity implements View.OnClickListener {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        switch (requestCode){
+        switch (requestCode) {
             case REQUEST_CODE_ENABLE:
                 Toast.makeText(this, "PinCode enabled", Toast.LENGTH_SHORT).show();
                 break;

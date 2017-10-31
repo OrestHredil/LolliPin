@@ -4,27 +4,26 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.dewarder.materialpin.enums.Algorithm;
-import com.dewarder.materialpin.storage.PasscodeDataStorage;
+import com.dewarder.materialpin.storage.PinDataStorage;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 
-public final class RealmPasscodeDataStorage implements PasscodeDataStorage {
+public final class RealmPinDataStorage implements PinDataStorage {
 
     private static final String REALM_NAME = "passcode_data.store";
 
     private final Realm mRealm;
 
-    public RealmPasscodeDataStorage(Context context) {
+    public RealmPinDataStorage(Context context) {
         this(RealmEncryptionKeyManager.getKeyProvider(context));
     }
 
-    public RealmPasscodeDataStorage(RealmEncryptionKeyProvider keyProvider) {
+    public RealmPinDataStorage(RealmEncryptionKeyProvider keyProvider) {
         mRealm = Realm.getInstance(createDefaultConfiguration(keyProvider));
     }
 
-    public RealmPasscodeDataStorage(RealmConfiguration configuration) {
+    public RealmPinDataStorage(RealmConfiguration configuration) {
         mRealm = Realm.getInstance(configuration);
     }
 
@@ -88,7 +87,7 @@ public final class RealmPasscodeDataStorage implements PasscodeDataStorage {
     }
 
     @Override
-    public void writePasscode(@NonNull String passcode) {
+    public void writePin(@NonNull String passcode) {
         mRealm.beginTransaction();
         PasscodeData data = getPasscodeData();
         data.setPasscode(passcode);
@@ -97,12 +96,12 @@ public final class RealmPasscodeDataStorage implements PasscodeDataStorage {
     }
 
     @Override
-    public boolean hasPasscode() {
+    public boolean hasPin() {
         return getPasscodeData().getPasscode() != null;
     }
 
     @Override
-    public void clearPasscode() {
+    public void clearPin() {
         mRealm.beginTransaction();
         PasscodeData data = getPasscodeData();
         data.setPasscode(null);

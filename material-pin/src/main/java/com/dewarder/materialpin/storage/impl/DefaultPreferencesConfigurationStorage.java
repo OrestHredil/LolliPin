@@ -4,40 +4,17 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import com.dewarder.materialpin.managers.AppLock;
-import com.dewarder.materialpin.managers.AppLockActivity;
+import com.dewarder.materialpin.DefaultConstants;
 import com.dewarder.materialpin.storage.ConfigurationStorage;
 
 public class DefaultPreferencesConfigurationStorage implements ConfigurationStorage {
 
-    /**
-     * The {@link android.content.SharedPreferences} key used to store the timeout
-     */
     private static final String TIMEOUT_MILLIS_PREFERENCE_KEY = "TIMEOUT_MILLIS_PREFERENCE_KEY";
-    /**
-     * The {@link android.content.SharedPreferences} key used to store the logo resource id
-     */
     private static final String LOGO_ID_PREFERENCE_KEY = "LOGO_ID_PREFERENCE_KEY";
-    /**
-     * The {@link android.content.SharedPreferences} key used to store the forgot option
-     */
     private static final String SHOW_FORGOT_PREFERENCE_KEY = "SHOW_FORGOT_PREFERENCE_KEY";
-    /**
-     * The {@link android.content.SharedPreferences} key used to store the last active time
-     */
     private static final String LAST_ACTIVE_MILLIS_PREFERENCE_KEY = "LAST_ACTIVE_MILLIS";
-    /**
-     * The {@link android.content.SharedPreferences} key used to store the only background timeout option
-     */
     private static final String ONLY_BACKGROUND_TIMEOUT_PREFERENCE_KEY = "ONLY_BACKGROUND_TIMEOUT_PREFERENCE_KEY";
-    /**
-     * The {@link SharedPreferences} key used to store whether the user has backed out of the {@link AppLockActivity}
-     */
     private static final String PIN_CHALLENGE_CANCELLED_PREFERENCE_KEY = "PIN_CHALLENGE_CANCELLED_PREFERENCE_KEY";
-    /**
-     * The {@link SharedPreferences} key used to store whether the caller has enabled fingerprint authentication.
-     * This value defaults to true for backwards compatibility.
-     */
     private static final String FINGERPRINT_AUTH_ENABLED_PREFERENCE_KEY = "FINGERPRINT_AUTH_ENABLED_PREFERENCE_KEY";
 
     private final SharedPreferences mPreferences;
@@ -48,7 +25,7 @@ public class DefaultPreferencesConfigurationStorage implements ConfigurationStor
 
     @Override
     public long readTimeout() {
-        return mPreferences.getLong(TIMEOUT_MILLIS_PREFERENCE_KEY, AppLock.DEFAULT_TIMEOUT);
+        return mPreferences.getLong(TIMEOUT_MILLIS_PREFERENCE_KEY, DefaultConstants.DEFAULT_TIMEOUT);
     }
 
     @Override
@@ -60,7 +37,7 @@ public class DefaultPreferencesConfigurationStorage implements ConfigurationStor
 
     @Override
     public int readLogoId() {
-        return mPreferences.getInt(LOGO_ID_PREFERENCE_KEY, AppLock.LOGO_ID_NONE);
+        return mPreferences.getInt(LOGO_ID_PREFERENCE_KEY, DefaultConstants.LOGO_ID_NONE);
     }
 
     @Override
@@ -72,7 +49,7 @@ public class DefaultPreferencesConfigurationStorage implements ConfigurationStor
 
     @Override
     public boolean readShouldShowForgot() {
-        return mPreferences.getBoolean(SHOW_FORGOT_PREFERENCE_KEY, AppLock.DEFAULT_SHOW_FORGOT);
+        return mPreferences.getBoolean(SHOW_FORGOT_PREFERENCE_KEY, DefaultConstants.DEFAULT_SHOW_FORGOT);
     }
 
     @Override
@@ -85,7 +62,7 @@ public class DefaultPreferencesConfigurationStorage implements ConfigurationStor
     @Override
     public boolean readPinChallengeCanceled() {
         return mPreferences.getBoolean(
-                PIN_CHALLENGE_CANCELLED_PREFERENCE_KEY, AppLock.DEFAULT_PIN_CHALLENGE_CANCELED);
+                PIN_CHALLENGE_CANCELLED_PREFERENCE_KEY, DefaultConstants.DEFAULT_PIN_CHALLENGE_CANCELED);
     }
 
     @Override
@@ -98,7 +75,7 @@ public class DefaultPreferencesConfigurationStorage implements ConfigurationStor
     @Override
     public boolean readOnlyBackgroundTimeout() {
         return mPreferences.getBoolean(
-                ONLY_BACKGROUND_TIMEOUT_PREFERENCE_KEY, AppLock.DEFAULT_ONLY_BACKGROUND_TIMEOUT);
+                ONLY_BACKGROUND_TIMEOUT_PREFERENCE_KEY, DefaultConstants.DEFAULT_ONLY_BACKGROUND_TIMEOUT);
     }
 
     @Override
@@ -111,7 +88,7 @@ public class DefaultPreferencesConfigurationStorage implements ConfigurationStor
     @Override
     public boolean readFingerprintAuthEnabled() {
         return mPreferences.getBoolean(
-                FINGERPRINT_AUTH_ENABLED_PREFERENCE_KEY, AppLock.DEFAULT_FINGERPRING_AUTH_ENABLED);
+                FINGERPRINT_AUTH_ENABLED_PREFERENCE_KEY, DefaultConstants.DEFAULT_FINGERPRINT_AUTH_ENABLED);
     }
 
     @Override

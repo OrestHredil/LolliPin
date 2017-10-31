@@ -13,7 +13,6 @@ import com.dewarder.materialpin.CustomPinActivity;
 import com.dewarder.materialpin.MainActivity;
 import com.dewarder.materialpin.NotLockedActivity;
 import com.dewarder.materialpin.encryption.Encryptor;
-import com.dewarder.materialpin.enums.Algorithm;
 import com.dewarder.materialpin.managers.DefaultAppLock;
 import com.dewarder.materialpin.managers.FingerprintUiHelper;
 import com.dewarder.materialpin.managers.LockManager;

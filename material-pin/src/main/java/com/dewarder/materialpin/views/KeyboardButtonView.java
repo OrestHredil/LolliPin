@@ -14,14 +14,14 @@ import android.widget.TextView;
 import com.andexert.library.RippleAnimationListener;
 import com.andexert.library.RippleView;
 import com.github.lollipin.lib.R;
-import com.dewarder.materialpin.interfaces.KeyboardButtonClickedListener;
+import com.dewarder.materialpin.interfaces.OnKeyboardButtonClickListener;
 
 /**
  * Created by stoyan and oliviergoutay on 1/13/15.
  */
 public class KeyboardButtonView extends RelativeLayout implements RippleAnimationListener {
 
-    private KeyboardButtonClickedListener mKeyboardButtonClickedListener;
+    private OnKeyboardButtonClickListener mOnKeyboardButtonClickListener;
 
     private Context mContext;
     private RippleView mRippleView;
@@ -55,20 +55,20 @@ public class KeyboardButtonView extends RelativeLayout implements RippleAnimatio
             KeyboardButtonView view = (KeyboardButtonView) inflater.inflate(R.layout.view_keyboard_button, this);
 
             if (text != null) {
-                TextView textView = (TextView) view.findViewById(R.id.keyboard_button_textview);
+                TextView textView = view.findViewById(R.id.keyboard_button_textview);
                 if (textView != null) {
                     textView.setText(text);
                 }
             }
             if (image != null) {
-                ImageView imageView = (ImageView) view.findViewById(R.id.keyboard_button_imageview);
+                ImageView imageView = view.findViewById(R.id.keyboard_button_imageview);
                 if (imageView != null) {
                     imageView.setImageDrawable(image);
                     imageView.setVisibility(View.VISIBLE);
                 }
             }
 
-            mRippleView = (RippleView) view.findViewById(R.id.pin_code_keyboard_button_ripple);
+            mRippleView = view.findViewById(R.id.pin_code_keyboard_button_ripple);
             mRippleView.setRippleAnimationListener(this);
             if (mRippleView != null) {
                 if (!rippleEnabled) {
@@ -82,14 +82,14 @@ public class KeyboardButtonView extends RelativeLayout implements RippleAnimatio
      * Set by {@link com.dewarder.materialpin.views.KeyboardView} to returns events to
      * {@link com.dewarder.materialpin.managers.AppLockActivity}
      */
-    public void setOnRippleAnimationEndListener(KeyboardButtonClickedListener keyboardButtonClickedListener) {
-        mKeyboardButtonClickedListener = keyboardButtonClickedListener;
+    public void setOnRippleAnimationEndListener(OnKeyboardButtonClickListener onKeyboardButtonClickListener) {
+        mOnKeyboardButtonClickListener = onKeyboardButtonClickListener;
     }
 
     @Override
     public void onRippleAnimationEnd() {
-        if (mKeyboardButtonClickedListener != null) {
-            mKeyboardButtonClickedListener.onRippleAnimationEnd();
+        if (mOnKeyboardButtonClickListener != null) {
+            mOnKeyboardButtonClickListener.onRippleAnimationEnd();
         }
     }
 
