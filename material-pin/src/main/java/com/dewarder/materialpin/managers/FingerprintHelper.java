@@ -50,7 +50,7 @@ import javax.crypto.SecretKey;
  * - text/icon around fingerprint authentication UI.
  */
 @TargetApi(Build.VERSION_CODES.M)
-public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallback {
+public class FingerprintHelper extends FingerprintManager.AuthenticationCallback {
 
     /**
      * The timeout for the error to be displayed. Returns to the normal UI after this.
@@ -90,7 +90,7 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
      */
     private final TextView mErrorTextView;
     /**
-     * The {@link com.dewarder.materialpin.managers.FingerprintUiHelper.Callback} used to return success or error.
+     * The {@link FingerprintHelper.Callback} used to return success or error.
      */
     private final Callback mCallback;
     /**
@@ -103,28 +103,49 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
     private boolean mSelfCancelled;
 
     /**
-     * Builder class for {@link FingerprintUiHelper} in which injected fields from Dagger
+     * Builder class for {@link FingerprintHelper} in which injected fields from Dagger
      * holds its fields and takes other arguments in the {@link #build} method.
      */
-    public static class FingerprintUiHelperBuilder {
-        private final FingerprintManager mFingerPrintManager;
+    public static class Builder {
 
-        public FingerprintUiHelperBuilder(FingerprintManager fingerprintManager) {
-            mFingerPrintManager = fingerprintManager;
+        private final FingerprintManager mFingerPrintManager;
+        private ImageView mIconView;
+        private TextView mErrorView;
+        private Callback mCallback;
+
+        public Builder(Context context) {
+            mFingerPrintManager = (FingerprintManager) context.getSystemService(Context.FINGERPRINT_SERVICE);
         }
 
-        public FingerprintUiHelper build(ImageView icon, TextView errorTextView, Callback callback) {
-            return new FingerprintUiHelper(mFingerPrintManager, icon, errorTextView,
-                    callback);
+        public Builder setIconView(ImageView iconView) {
+            mIconView = iconView;
+            return this;
+        }
+
+        public Builder setErrorView(TextView errorView) {
+            mErrorView = errorView;
+            return this;
+        }
+
+        public Builder setCallback(Callback callback) {
+            mCallback = callback;
+            return this;
+        }
+
+        public FingerprintHelper build() {
+            return new FingerprintHelper(mFingerPrintManager, mIconView, mErrorView, mCallback);
         }
     }
 
     /**
-     * Constructor for {@link FingerprintUiHelper}. This method is expected to be called from
-     * only the {@link FingerprintUiHelperBuilder} class.
+     * Constructor for {@link FingerprintHelper}. This method is expected to be called from
+     * only the {@link Builder} class.
      */
-    private FingerprintUiHelper(FingerprintManager fingerprintManager,
-                                ImageView icon, TextView errorTextView, Callback callback) {
+    private FingerprintHelper(FingerprintManager fingerprintManager,
+                              ImageView icon,
+                              TextView errorTextView,
+                              Callback callback) {
+
         mFingerprintManager = fingerprintManager;
         mIcon = icon;
         mErrorTextView = errorTextView;
@@ -136,10 +157,10 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
      *
      * @throws SecurityException If the hardware is not available, or the permission are not set
      */
-    public void startListening() throws SecurityException {
+    public void startListening() {
         if (initCipher()) {
             FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(mCipher);
-            if (!isFingerprintAuthAvailable()) {
+            if (!isAvailable()) {
                 return;
             }
             mCancellationSignal = new CancellationSignal();
@@ -167,12 +188,7 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
     public void onAuthenticationError(int errMsgId, CharSequence errString) {
         if (!mSelfCancelled) {
             showError(errString);
-            mIcon.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mCallback.onError();
-                }
-            }, ERROR_TIMEOUT_MILLIS);
+            mIcon.postDelayed(mCallback::onError, ERROR_TIMEOUT_MILLIS);
         }
     }
 
@@ -202,27 +218,25 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
         mIcon.setImageResource(R.drawable.ic_fingerprint_success);
         mErrorTextView.setTextColor(
                 mErrorTextView.getResources().getColor(R.color.success_color, null));
-        mErrorTextView.setText(
-                mErrorTextView.getResources().getString(R.string.pin_code_fingerprint_success));
-        mIcon.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mCallback.onAuthenticated();
-            }
-        }, SUCCESS_DELAY_MILLIS);
+        mErrorTextView.setText(R.string.pin_code_fingerprint_success);
+        mIcon.postDelayed(mCallback::onAuthenticated, SUCCESS_DELAY_MILLIS);
     }
 
     /**
      * Tells if the {@link FingerprintManager#isHardwareDetected()}, {@link FingerprintManager#hasEnrolledFingerprints()},
      * and {@link KeyguardManager#isDeviceSecure()}
-     * 
+     *
      * @return true if yes, false otherwise
      * @throws SecurityException If the hardware is not available, or the permission are not set
      */
-    public boolean isFingerprintAuthAvailable() throws SecurityException {
-        return mFingerprintManager.isHardwareDetected()
-                && mFingerprintManager.hasEnrolledFingerprints()
-                && ((KeyguardManager) mIcon.getContext().getSystemService(Context.KEYGUARD_SERVICE)).isDeviceSecure();
+    public boolean isAvailable() {
+        try {
+            return mFingerprintManager.isHardwareDetected()
+                    && mFingerprintManager.hasEnrolledFingerprints()
+                    && ((KeyguardManager) mIcon.getContext().getSystemService(Context.KEYGUARD_SERVICE)).isDeviceSecure();
+        } catch (SecurityException e) {
+            return false;
+        }
     }
 
     /**
@@ -267,8 +281,8 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
                     KeyProperties.PURPOSE_ENCRYPT |
                             KeyProperties.PURPOSE_DECRYPT)
                     .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-                            // Require the user to authenticate with a fingerprint to authorize every use
-                            // of the key
+                    // Require the user to authenticate with a fingerprint to authorize every use
+                    // of the key
                     .setUserAuthenticationRequired(true)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
                     .build());
@@ -298,8 +312,7 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
         public void run() {
             mErrorTextView.setTextColor(
                     mErrorTextView.getResources().getColor(R.color.hint_color, null));
-            mErrorTextView.setText(
-                    mErrorTextView.getResources().getString(R.string.pin_code_fingerprint_text));
+            mErrorTextView.setText(R.string.pin_code_fingerprint_text);
             mIcon.setImageResource(R.drawable.ic_fp_40px);
         }
     };
@@ -308,6 +321,7 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
      * The interface used to call the original Activity/Fragment... that uses this helper.
      */
     public interface Callback {
+
         void onAuthenticated();
 
         void onError();

@@ -14,9 +14,9 @@ public interface LockManager {
 
     boolean isLocked();
 
-    void addCondition(@NonNull LockCondition condition);
+    void addConditions(@NonNull LockCondition... condition);
 
-    void removeCondition(@NonNull LockCondition condition);
+    void removeConditions(@NonNull LockCondition... condition);
 
     @NonNull
     FingerprintManager getFingerprintManager();

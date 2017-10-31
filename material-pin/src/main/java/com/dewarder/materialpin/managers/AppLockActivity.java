@@ -1,9 +1,7 @@
 package com.dewarder.materialpin.managers;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -16,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.dewarder.materialpin.DefaultConstants;
+import com.dewarder.materialpin.FingerprintManager;
 import com.dewarder.materialpin.PinManager;
 import com.dewarder.materialpin.PinState;
 import com.dewarder.materialpin.enums.KeyboardButton;
@@ -34,7 +33,7 @@ import static com.dewarder.materialpin.PinState.UNLOCK;
  * Call this activity in normal or singleTop mode (not singleTask or singleInstance, it does not work
  * with {@link android.app.Activity#startActivityForResult(android.content.Intent, int)}).
  */
-public class AppLockActivity extends Activity implements OnKeyboardButtonClickListener, View.OnClickListener, FingerprintUiHelper.Callback {
+public class AppLockActivity extends Activity implements OnKeyboardButtonClickListener, FingerprintHelper.Callback {
 
     public static final String TAG = AppLockActivity.class.getSimpleName();
     public static final String ACTION_CANCEL = TAG + ".actionCancelled";
@@ -52,15 +51,30 @@ public class AppLockActivity extends Activity implements OnKeyboardButtonClickLi
 
     protected LockManager mLockManager;
     protected PinManager mPinManager;
-
     protected FingerprintManager mFingerprintManager;
-    protected FingerprintUiHelper mFingerprintUiHelper;
+
+    protected FingerprintHelper mFingerprintHelper;
 
     protected PinState mState = UNLOCK;
     protected int mAttempts = 0;
     protected String mPinCode = EMPTY_PIN_CODE;
     protected String mOldPinCode = EMPTY_PIN_CODE;
     private boolean isCodeSuccessful = false;
+
+
+    /**
+     * Gets the resource id to the {@link View} to be set with {@link #setContentView(int)}.
+     * The custom layout must include the following:
+     * - {@link TextView} with an id of pin_code_step_textview
+     * - {@link TextView} with an id of pin_code_forgot_textview
+     * - {@link PinCodeRoundView} with an id of pin_code_round_view
+     * - {@link KeyboardView} with an id of pin_code_keyboard_view
+     *
+     * @return the resource id to the {@link View}
+     */
+    protected int getContentView() {
+        return R.layout.activity_pin_code;
+    }
 
     /**
      * First creation
@@ -93,8 +107,8 @@ public class AppLockActivity extends Activity implements OnKeyboardButtonClickLi
     @Override
     protected void onPause() {
         super.onPause();
-        if (mFingerprintUiHelper != null) {
-            mFingerprintUiHelper.stopListening();
+        if (mFingerprintHelper != null) {
+            mFingerprintHelper.stopListening();
         }
     }
 
@@ -108,8 +122,8 @@ public class AppLockActivity extends Activity implements OnKeyboardButtonClickLi
 
         mLockManager = MaterialPin.getLockManager();
         mPinManager = mLockManager.getPinManager();
+        mFingerprintManager = mLockManager.getFingerprintManager();
 
-        enableAppLockerIfDoesNotExist();
         //mLockManager.getAppLock().setPinChallengeCancelled(false);
         //mAttempts = mLockManager.getAppLock().getAttemptsCount();
 
@@ -117,7 +131,7 @@ public class AppLockActivity extends Activity implements OnKeyboardButtonClickLi
         mPinCodeRoundView = findViewById(R.id.pin_code_round_view);
         mPinCodeRoundView.setPinLength(getPinLength());
         mForgotTextView = findViewById(R.id.pin_code_forgot_textview);
-        mForgotTextView.setOnClickListener(this);
+        mForgotTextView.setOnClickListener(v -> showForgotDialog());
         mKeyboardView = findViewById(R.id.pin_code_keyboard_view);
         mKeyboardView.setKeyboardButtonClickedListener(this);
 
@@ -133,45 +147,27 @@ public class AppLockActivity extends Activity implements OnKeyboardButtonClickLi
         setStepText();
     }
 
-    /**
-     * Init {@link FingerprintManager} of the {@link android.os.Build.VERSION#SDK_INT} is > to Marshmallow
-     * and {@link FingerprintManager#isHardwareDetected()}.
-     */
     private void initLayoutForFingerprint() {
         mFingerprintImageView = findViewById(R.id.pin_code_fingerprint_imageview);
         mFingerprintTextView = findViewById(R.id.pin_code_fingerprint_textview);
-        if (mState == UNLOCK && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mFingerprintManager = (FingerprintManager) getSystemService(Context.FINGERPRINT_SERVICE);
-            mFingerprintUiHelper = new FingerprintUiHelper.FingerprintUiHelperBuilder(mFingerprintManager).build(mFingerprintImageView, mFingerprintTextView, this);
-            try {
-                if (mFingerprintManager.isHardwareDetected() && mFingerprintUiHelper.isFingerprintAuthAvailable()
-                        ) {  //TODO: && mLockManager.getAppLock().isFingerprintAuthEnabled()) {
-                    mFingerprintImageView.setVisibility(View.VISIBLE);
-                    mFingerprintTextView.setVisibility(View.VISIBLE);
-                    mFingerprintUiHelper.startListening();
-                } else {
-                    mFingerprintImageView.setVisibility(View.GONE);
-                    mFingerprintTextView.setVisibility(View.GONE);
-                }
-            } catch (SecurityException e) {
-                Log.e(TAG, e.toString());
-                mFingerprintImageView.setVisibility(View.GONE);
-                mFingerprintTextView.setVisibility(View.GONE);
-            }
-        } else {
-            mFingerprintImageView.setVisibility(View.GONE);
-            mFingerprintTextView.setVisibility(View.GONE);
-        }
-    }
 
-    private void enableAppLockerIfDoesNotExist() {
-        try {
-            /*TODO: if (mLockManager.getAppLock() == null) {
-                mLockManager.enableAppLock(this, getCustomAppLockActivityClass());
-            }*/
-        } catch (Exception e) {
-            Log.e(TAG, e.toString());
+        if (mState == UNLOCK && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mFingerprintHelper = new FingerprintHelper.Builder(this)
+                    .setIconView(mFingerprintImageView)
+                    .setErrorView(mFingerprintTextView)
+                    .setCallback(this)
+                    .build();
+
+            if (mFingerprintManager.isEnabled() && mFingerprintHelper.isAvailable()) {
+                mFingerprintImageView.setVisibility(View.VISIBLE);
+                mFingerprintTextView.setVisibility(View.VISIBLE);
+                mFingerprintHelper.startListening();
+                return;
+            }
         }
+
+        mFingerprintImageView.setVisibility(View.GONE);
+        mFingerprintTextView.setVisibility(View.GONE);
     }
 
     private void setStepText() {
@@ -237,6 +233,26 @@ public class AppLockActivity extends Activity implements OnKeyboardButtonClickLi
         }
     }
 
+    protected void onPinCodeInputed() {
+        switch (mState) {
+            case DISABLE:
+                handleDisableState();
+                break;
+            case ENABLE:
+                handleEnableState();
+                break;
+            case CONFIRM:
+                handleConfirmState();
+                break;
+            case CHANGE:
+                handleChangeState();
+                break;
+            case UNLOCK:
+                handleUnlockState();
+                break;
+        }
+    }
+
     protected void handleDisableState() {
         if (!mPinManager.checkPin(mPinCode)) {
             onPinCodeError();
@@ -297,26 +313,6 @@ public class AppLockActivity extends Activity implements OnKeyboardButtonClickLi
         finish();
     }
 
-    protected void onPinCodeInputed() {
-        switch (mState) {
-            case DISABLE:
-                handleDisableState();
-                break;
-            case ENABLE:
-                handleEnableState();
-                break;
-            case CONFIRM:
-                handleConfirmState();
-                break;
-            case CHANGE:
-                handleChangeState();
-                break;
-            case UNLOCK:
-                handleUnlockState();
-                break;
-        }
-    }
-
     /**
      * Override {@link #onBackPressed()} to prevent user for finishing the activity
      */
@@ -335,15 +331,15 @@ public class AppLockActivity extends Activity implements OnKeyboardButtonClickLi
 
     @Override
     public void onAuthenticated() {
-        Log.e(TAG, "Fingerprint READ!!!");
-        setResult(RESULT_OK);
+        Log.e(TAG, "onAuthenticated");
         onPinCodeSuccess();
+        setResult(RESULT_OK);
         finish();
     }
 
     @Override
     public void onError() {
-        Log.e(TAG, "Fingerprint READ ERROR!!!");
+        Log.e(TAG, "onError");
     }
 
     /**
@@ -361,7 +357,7 @@ public class AppLockActivity extends Activity implements OnKeyboardButtonClickLi
         mAttempts = mLockManager.getPinManager().incrementAttemptsCountAndGet();
         onPinFailure(mAttempts);
         runOnUiThread(() -> {
-            mPinCode = "";
+            mPinCode = EMPTY_PIN_CODE;
             mPinCodeRoundView.refresh(mPinCode.length());
             Animation animation = AnimationUtils.loadAnimation(
                     AppLockActivity.this, R.anim.shake);
@@ -385,17 +381,6 @@ public class AppLockActivity extends Activity implements OnKeyboardButtonClickLi
     }
 
     /**
-     * When we click on the {@link #mForgotTextView} handle the pop-up
-     * dialog
-     *
-     * @param view {@link #mForgotTextView}
-     */
-    @Override
-    public void onClick(View view) {
-        showForgotDialog();
-    }
-
-    /**
      * When the user has failed a pin challenge
      *
      * @param attempts the number of attempts the user has used
@@ -411,20 +396,6 @@ public class AppLockActivity extends Activity implements OnKeyboardButtonClickLi
      */
     public void onPinSuccess(int attempts) {
 
-    }
-
-    /**
-     * Gets the resource id to the {@link View} to be set with {@link #setContentView(int)}.
-     * The custom layout must include the following:
-     * - {@link TextView} with an id of pin_code_step_textview
-     * - {@link TextView} with an id of pin_code_forgot_textview
-     * - {@link PinCodeRoundView} with an id of pin_code_round_view
-     * - {@link KeyboardView} with an id of pin_code_keyboard_view
-     *
-     * @return the resource id to the {@link View}
-     */
-    public int getContentView() {
-        return R.layout.activity_pin_code;
     }
 
     /**

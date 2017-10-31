@@ -14,7 +14,7 @@ import com.dewarder.materialpin.MainActivity;
 import com.dewarder.materialpin.NotLockedActivity;
 import com.dewarder.materialpin.encryption.Encryptor;
 import com.dewarder.materialpin.managers.DefaultAppLock;
-import com.dewarder.materialpin.managers.FingerprintUiHelper;
+import com.dewarder.materialpin.managers.FingerprintHelper;
 import com.dewarder.materialpin.managers.LockManager;
 import com.dewarder.materialpin.views.PinCodeRoundView;
 
@@ -107,8 +107,8 @@ public class PinLockTest extends AbstractTest {
             ImageView fingerprintImageView = (ImageView) solo.getView(com.github.lollipin.lib.R.id.pin_code_fingerprint_imageview);
             TextView fingerprintTextView = (TextView) solo.getView(com.github.lollipin.lib.R.id.pin_code_fingerprint_textview);
             FingerprintManager fingerprintManager = (FingerprintManager) getActivity().getSystemService(Context.FINGERPRINT_SERVICE);
-            FingerprintUiHelper fingerprintUiHelper = new FingerprintUiHelper.FingerprintUiHelperBuilder(fingerprintManager).build(fingerprintImageView, fingerprintTextView, (CustomPinActivity) solo.getCurrentActivity());
-            if (fingerprintManager.isHardwareDetected() && fingerprintUiHelper.isFingerprintAuthAvailable()) {
+            FingerprintHelper fingerprintHelper = new FingerprintHelper.Builder(fingerprintManager).build(fingerprintImageView, fingerprintTextView, (CustomPinActivity) solo.getCurrentActivity());
+            if (fingerprintManager.isHardwareDetected() && fingerprintHelper.isAvailable()) {
                 assertEquals(View.VISIBLE, solo.getView(R.id.pin_code_fingerprint_imageview).getVisibility());
                 assertEquals(View.VISIBLE, solo.getView(R.id.pin_code_fingerprint_textview).getVisibility());
             } else {

@@ -8,12 +8,13 @@ import android.support.annotation.NonNull;
 
 import com.dewarder.materialpin.FingerprintManager;
 import com.dewarder.materialpin.LockCondition;
-import com.dewarder.materialpin.util.Objects;
 import com.dewarder.materialpin.PinManager;
 import com.dewarder.materialpin.PinState;
-import com.dewarder.materialpin.util.SimpleActivityCallbacks;
 import com.dewarder.materialpin.storage.impl.DefaultPreferencesPinDataStorage;
+import com.dewarder.materialpin.util.Objects;
+import com.dewarder.materialpin.util.SimpleActivityCallbacks;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -56,15 +57,15 @@ public class DefaultLockManager implements LockManager {
     }
 
     @Override
-    public void addCondition(@NonNull LockCondition condition) {
-        Objects.requireNonNull(condition);
-        mConditions.add(condition);
+    public void addConditions(@NonNull LockCondition... conditions) {
+        Objects.requireNonNulls(conditions);
+        mConditions.addAll(Arrays.asList(conditions));
     }
 
     @Override
-    public void removeCondition(@NonNull LockCondition condition) {
-        Objects.requireNonNull(condition);
-        mConditions.remove(condition);
+    public void removeConditions(@NonNull LockCondition... conditions) {
+        Objects.requireNonNulls(conditions);
+        mConditions.removeAll(Arrays.asList(conditions));
     }
 
     @NonNull
