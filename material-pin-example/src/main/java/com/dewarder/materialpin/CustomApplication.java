@@ -3,6 +3,7 @@ package com.dewarder.materialpin;
 import android.app.Application;
 
 import com.dewarder.materialpin.lock.LockCondition;
+import com.dewarder.materialpin.manager.LockManager;
 
 import java.util.concurrent.TimeUnit;
 

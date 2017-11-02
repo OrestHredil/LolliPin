@@ -14,7 +14,7 @@ import com.dewarder.materialpin.MainActivity;
 import com.dewarder.materialpin.NotLockedActivity;
 import com.dewarder.materialpin.encryption.Encryptor;
 import com.dewarder.materialpin.ui.FingerprintHelper;
-import com.dewarder.materialpin.LockManager;
+import com.dewarder.materialpin.manager.LockManager;
 import com.dewarder.materialpin.views.PinCodeRoundView;
 
 import lollipin.orangegangsters.github.com.lollipin.R;

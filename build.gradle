@@ -23,6 +23,7 @@ buildscript {
 
 allprojects {
     repositories {
+        //TODO: Get rid
         maven {
             url "https://github.com/omadahealth/omada-nexus/raw/master/release"
         }

@@ -1,16 +1,17 @@
-package com.dewarder.materialpin.ui;
+package com.dewarder.materialpin.manager.impl;
 
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 
-import com.dewarder.materialpin.FingerprintManager;
-import com.dewarder.materialpin.LockManager;
 import com.dewarder.materialpin.lock.LockCondition;
-import com.dewarder.materialpin.PinManager;
 import com.dewarder.materialpin.PinState;
+import com.dewarder.materialpin.manager.FingerprintManager;
+import com.dewarder.materialpin.manager.LockManager;
+import com.dewarder.materialpin.manager.PinManager;
 import com.dewarder.materialpin.storage.impl.DefaultPreferencesPinDataStorage;
+import com.dewarder.materialpin.ui.PinLockActivity;
 import com.dewarder.materialpin.util.Objects;
 import com.dewarder.materialpin.util.application.SimpleActivityCallbacks;
 

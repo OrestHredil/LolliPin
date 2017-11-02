@@ -1,11 +1,9 @@
-package com.dewarder.materialpin;
+package com.dewarder.materialpin.manager;
 
 import android.app.Activity;
 import android.support.annotation.NonNull;
 
-import com.dewarder.materialpin.FingerprintManager;
 import com.dewarder.materialpin.lock.LockCondition;
-import com.dewarder.materialpin.PinManager;
 
 public interface LockManager {
 

@@ -1,10 +1,10 @@
-package com.dewarder.materialpin.ui;
+package com.dewarder.materialpin.manager.impl;
 
 import android.support.annotation.NonNull;
 
-import com.dewarder.materialpin.PinManager;
 import com.dewarder.materialpin.encryption.Encryptor;
 import com.dewarder.materialpin.encryption.SaltGenerator;
+import com.dewarder.materialpin.manager.PinManager;
 import com.dewarder.materialpin.storage.PinDataStorage;
 import com.dewarder.materialpin.util.Objects;
 

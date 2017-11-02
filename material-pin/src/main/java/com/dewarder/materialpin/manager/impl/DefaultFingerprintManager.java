@@ -1,6 +1,6 @@
-package com.dewarder.materialpin.ui;
+package com.dewarder.materialpin.manager.impl;
 
-import com.dewarder.materialpin.FingerprintManager;
+import com.dewarder.materialpin.manager.FingerprintManager;
 
 public class DefaultFingerprintManager implements FingerprintManager {
 

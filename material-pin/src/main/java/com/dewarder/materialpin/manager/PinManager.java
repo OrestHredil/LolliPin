@@ -1,4 +1,4 @@
-package com.dewarder.materialpin;
+package com.dewarder.materialpin.manager;
 
 import android.support.annotation.NonNull;
 

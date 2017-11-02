@@ -16,8 +16,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.dewarder.materialpin.DefaultConstants;
-import com.dewarder.materialpin.FingerprintManager;
-import com.dewarder.materialpin.LockManager;
+import com.dewarder.materialpin.manager.FingerprintManager;
+import com.dewarder.materialpin.manager.LockManager;
 import com.dewarder.materialpin.MaterialPin;
 import com.dewarder.materialpin.PinState;
 import com.dewarder.materialpin.PinType;
@@ -88,14 +88,12 @@ public class PinLockActivity extends Activity implements
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-
         initLayout(intent);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //Init layout for Fingerprint
         initLayoutForFingerprint();
     }
 
@@ -138,8 +136,6 @@ public class PinLockActivity extends Activity implements
             logoImage.setVisibility(View.VISIBLE);
             logoImage.setImageResource(logoId);
         }
-
-        mForgotTextView.setText(getForgotText());
 
         invalidateForgotPin();
         invalidateStep();
@@ -199,27 +195,9 @@ public class PinLockActivity extends Activity implements
         mForgotTextView.setVisibility(pinState.hasForgotPin() ? View.VISIBLE : View.GONE);
     }
 
-    public String getForgotText() {
-        return getString(R.string.pin_code_forgot_text);
-    }
-
-    /**
-     * Overrides to allow a slide_down animation when finishing
-     */
     @Override
     public void finish() {
         super.finish();
-
-        //If code successful, reset the timer
-/*        if (isCodeSuccessful) {
-            if (mLockManager != null) {
-*//*                AppLock appLock = null;//TODO: mLockManager.getAppLock();
-                if (appLock != null) {
-                    appLock.setLastActiveMillis();
-                }*//*
-            }
-        }*/
-
         overridePendingTransition(R.anim.nothing, R.anim.slide_down);
     }
 
@@ -264,15 +242,6 @@ public class PinLockActivity extends Activity implements
         Log.e(TAG, "onError");
     }
 
-    /**
-     * Displays the information dialog when the user clicks the
-     * {@link #mForgotTextView}
-     */
-    public void showForgotDialog() {
-
-    }
-
-
     @CallSuper
     @Override
     public void onPinInvalid(@NonNull PinType type, int attempts) {
@@ -282,6 +251,7 @@ public class PinLockActivity extends Activity implements
         mKeyboardView.startAnimation(animation);
     }
 
+    @CallSuper
     @Override
     public void onPinSuccess(@NonNull PinType type, int attempts) {
         setResult(RESULT_OK);
@@ -290,6 +260,14 @@ public class PinLockActivity extends Activity implements
 
     @Override
     public void onError(Throwable throwable) {
+
+    }
+
+    /**
+     * Displays the information dialog when the user clicks the
+     * {@link #mForgotTextView}
+     */
+    public void showForgotDialog() {
 
     }
 }
