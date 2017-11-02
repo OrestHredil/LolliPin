@@ -2,15 +2,19 @@ package com.dewarder.materialpin;
 
 import android.support.annotation.NonNull;
 
+import java.util.concurrent.Callable;
+
 public interface PinManager {
 
-    void clearPin();
+    Runnable clearPin();
 
-    void setPin(@NonNull String pin);
+    Runnable setPin(@NonNull String pin);
 
-    boolean checkPin(@NonNull String pin);
+    Callable<Boolean> checkPin(@NonNull String pin);
 
-    int incrementAttemptsCountAndGet();
+    Callable<Integer> getAttemptsCount();
 
-    void resetAttemptsCount();
+    Callable<Integer> incrementAttemptsCountAndGet();
+
+    Runnable resetAttemptsCount();
 }

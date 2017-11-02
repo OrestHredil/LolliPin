@@ -8,19 +8,19 @@ import com.dewarder.materialpin.util.Sets;
 import java.util.Collections;
 import java.util.Set;
 
-public final class ActivityLockCondition implements LockCondition {
+final class ActivityLockCondition implements LockCondition {
 
     private final Set<Class<? extends Activity>> mIncludedForLock;
     private final Set<Class<? extends Activity>> mIgnoredForLock;
     private final boolean mLockAll;
 
     @SafeVarargs
-    public static LockCondition allExcept(Class<? extends Activity>... ignored) {
+    static LockCondition allExcept(Class<? extends Activity>... ignored) {
         return new ActivityLockCondition(Collections.emptySet(), Sets.asSet(ignored), true);
     }
 
     @SafeVarargs
-    public static LockCondition onlyFor(Class<? extends Activity>... included) {
+    static LockCondition only(Class<? extends Activity>... included) {
         return new ActivityLockCondition(Sets.asSet(included), Collections.emptySet(), false);
     }
 

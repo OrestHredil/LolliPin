@@ -3,10 +3,11 @@ package com.dewarder.materialpin.interfaces;
 import android.support.annotation.NonNull;
 
 import com.dewarder.materialpin.enums.KeyboardButton;
+import com.dewarder.materialpin.managers.PinLockActivity;
 
 /**
  * Created by stoyan and oliviergoutay on 1/13/15.
- * The {@link com.dewarder.materialpin.managers.AppLockActivity} will implement
+ * The {@link PinLockActivity} will implement
  * this in order to receive events from {@link com.dewarder.materialpin.views.KeyboardButtonView}
  * and {@link com.dewarder.materialpin.views.KeyboardView}
  */

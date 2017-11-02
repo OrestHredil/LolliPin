@@ -25,7 +25,7 @@ public class DefaultPreferencesConfigurationStorage implements ConfigurationStor
 
     @Override
     public long readTimeout() {
-        return mPreferences.getLong(TIMEOUT_MILLIS_PREFERENCE_KEY, DefaultConstants.DEFAULT_TIMEOUT);
+        return mPreferences.getLong(TIMEOUT_MILLIS_PREFERENCE_KEY, DefaultConstants.TIMEOUT);
     }
 
     @Override
@@ -49,7 +49,7 @@ public class DefaultPreferencesConfigurationStorage implements ConfigurationStor
 
     @Override
     public boolean readShouldShowForgot() {
-        return mPreferences.getBoolean(SHOW_FORGOT_PREFERENCE_KEY, DefaultConstants.DEFAULT_SHOW_FORGOT);
+        return mPreferences.getBoolean(SHOW_FORGOT_PREFERENCE_KEY, DefaultConstants.SHOW_FORGOT);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class DefaultPreferencesConfigurationStorage implements ConfigurationStor
     @Override
     public boolean readPinChallengeCanceled() {
         return mPreferences.getBoolean(
-                PIN_CHALLENGE_CANCELLED_PREFERENCE_KEY, DefaultConstants.DEFAULT_PIN_CHALLENGE_CANCELED);
+                PIN_CHALLENGE_CANCELLED_PREFERENCE_KEY, DefaultConstants.PIN_CHALLENGE_CANCELED);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class DefaultPreferencesConfigurationStorage implements ConfigurationStor
     @Override
     public boolean readOnlyBackgroundTimeout() {
         return mPreferences.getBoolean(
-                ONLY_BACKGROUND_TIMEOUT_PREFERENCE_KEY, DefaultConstants.DEFAULT_ONLY_BACKGROUND_TIMEOUT);
+                ONLY_BACKGROUND_TIMEOUT_PREFERENCE_KEY, DefaultConstants.ONLY_BACKGROUND_TIMEOUT);
     }
 
     @Override
@@ -88,7 +88,7 @@ public class DefaultPreferencesConfigurationStorage implements ConfigurationStor
     @Override
     public boolean readFingerprintAuthEnabled() {
         return mPreferences.getBoolean(
-                FINGERPRINT_AUTH_ENABLED_PREFERENCE_KEY, DefaultConstants.DEFAULT_FINGERPRINT_AUTH_ENABLED);
+                FINGERPRINT_AUTH_ENABLED_PREFERENCE_KEY, DefaultConstants.FINGERPRINT_AUTH_ENABLED);
     }
 
     @Override

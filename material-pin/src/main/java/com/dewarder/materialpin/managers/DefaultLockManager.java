@@ -35,7 +35,7 @@ public class DefaultLockManager implements LockManager {
 
     public DefaultLockManager(Application application) {
         mContext = application;
-        mPinActivityClass = AppLockActivity.class;
+        mPinActivityClass = PinLockActivity.class;
         mPinManager = new DefaultPinManager(new DefaultPreferencesPinDataStorage(application));
         mFingerprintManager = new DefaultFingerprintManager();
         application.registerActivityLifecycleCallbacks(new ActivityLockHandler());

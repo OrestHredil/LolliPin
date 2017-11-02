@@ -2,11 +2,13 @@ package com.dewarder.materialpin.managers;
 
 import android.support.annotation.NonNull;
 
-import com.dewarder.materialpin.util.Objects;
 import com.dewarder.materialpin.PinManager;
 import com.dewarder.materialpin.encryption.Encryptor;
 import com.dewarder.materialpin.encryption.SaltGenerator;
 import com.dewarder.materialpin.storage.PinDataStorage;
+import com.dewarder.materialpin.util.Objects;
+
+import java.util.concurrent.Callable;
 
 public class DefaultPinManager implements PinManager {
 
@@ -17,34 +19,46 @@ public class DefaultPinManager implements PinManager {
     }
 
     @Override
-    public void clearPin() {
-        mStorage.clearPin();
+    public Runnable clearPin() {
+        return mStorage::clearPin;
     }
 
     @Override
-    public void setPin(@NonNull String pin) {
-        String salt = getSalt();
-        String pinSHA = Encryptor.getSHA(salt + pin + salt);
-        mStorage.writePin(pinSHA);
+    public Runnable setPin(@NonNull String pin) {
+        return () -> {
+            String salt = getSalt();
+            String pinSHA = Encryptor.getSHA(salt + pin + salt);
+            mStorage.writePin(pinSHA);
+        };
     }
 
     @Override
-    public boolean checkPin(@NonNull String pin) {
-        String salt = getSalt();
-        String pinSHA = Encryptor.getSHA(salt + pin + salt);
-
-        return mStorage.hasPin() &&
-                mStorage.readPasscode().equalsIgnoreCase(pinSHA);
+    public Callable<Boolean> checkPin(@NonNull String pin) {
+        return () -> {
+            String salt = getSalt();
+            String pinSHA = Encryptor.getSHA(salt + pin + salt);
+            return mStorage.hasPin() &&
+                    mStorage.readPasscode().equalsIgnoreCase(pinSHA);
+        };
     }
 
     @Override
-    public int incrementAttemptsCountAndGet() {
-        return 0;
+    public Callable<Integer> getAttemptsCount() {
+        return mStorage::readAttemptsCount;
     }
 
     @Override
-    public void resetAttemptsCount() {
+    public Callable<Integer> incrementAttemptsCountAndGet() {
+        return () -> {
+            int attempts = mStorage.readAttemptsCount() + 1;
+            mStorage.writeAttemptsCount(attempts);
+            return attempts;
+        };
+    }
 
+    @Override
+    public Runnable resetAttemptsCount() {
+        return () -> mStorage.writeAttemptsCount(0);
     }
 
     @NonNull

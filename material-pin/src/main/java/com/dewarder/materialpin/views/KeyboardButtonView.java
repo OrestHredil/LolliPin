@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.andexert.library.RippleAnimationListener;
 import com.andexert.library.RippleView;
+import com.dewarder.materialpin.managers.PinLockActivity;
 import com.github.lollipin.lib.R;
 import com.dewarder.materialpin.interfaces.OnKeyboardButtonClickListener;
 
@@ -80,7 +81,7 @@ public class KeyboardButtonView extends RelativeLayout implements RippleAnimatio
 
     /**
      * Set by {@link com.dewarder.materialpin.views.KeyboardView} to returns events to
-     * {@link com.dewarder.materialpin.managers.AppLockActivity}
+     * {@link PinLockActivity}
      */
     public void setOnRippleAnimationEndListener(OnKeyboardButtonClickListener onKeyboardButtonClickListener) {
         mOnKeyboardButtonClickListener = onKeyboardButtonClickListener;

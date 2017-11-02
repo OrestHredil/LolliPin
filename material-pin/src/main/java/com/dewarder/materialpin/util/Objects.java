@@ -10,7 +10,8 @@ public final class Objects {
         return requireNonNull(object, "Non-null object is required");
     }
 
-    public static <T> T[] requireNonNulls(T[] objects) {
+    @SafeVarargs
+    public static <T> T[] requireNonNulls(T... objects) {
         for (Object o : objects) {
             if (o == null) {
                 throw new NullPointerException("All objects should be non-null");

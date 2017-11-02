@@ -3,8 +3,6 @@ package com.dewarder.materialpin.encryption;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.dewarder.materialpin.managers.DefaultAppLock;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;

@@ -17,6 +17,6 @@ public class CustomApplication extends Application {
 
         LockManager lockManager = MaterialPin.getLockManager();
         lockManager.addConditions(
-                ActivityLockCondition.onlyFor(MainActivity.class));
+                ActivityLockCondition.only(MainActivity.class));
     }
 }

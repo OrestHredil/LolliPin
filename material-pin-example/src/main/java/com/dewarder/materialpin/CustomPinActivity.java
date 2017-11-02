@@ -4,10 +4,9 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
-import android.view.ViewPropertyAnimator;
 import android.widget.Toast;
 
-import com.dewarder.materialpin.managers.AppLockActivity;
+import com.dewarder.materialpin.managers.PinLockActivity;
 
 import lollipin.orangegangsters.github.com.lollipin.R;
 import uk.me.lewisdeane.ldialogs.BaseDialog;
@@ -16,7 +15,7 @@ import uk.me.lewisdeane.ldialogs.CustomDialog;
 /**
  * Created by oliviergoutay on 1/14/15.
  */
-public class CustomPinActivity extends AppLockActivity {
+public class CustomPinActivity extends PinLockActivity {
 
     @Override
     public void showForgotDialog() {
@@ -62,19 +61,5 @@ public class CustomPinActivity extends AppLockActivity {
 
         // Show the dialog.
         customDialog.show();
-    }
-
-    @Override
-    public void onPinFailure(int attempts) {
-    }
-
-    @Override
-    public void onPinSuccess(int attempts) {
-
-    }
-
-    @Override
-    public int getPinLength() {
-        return super.getPinLength();//you can override this method to change the pin length from the default 4
     }
 }

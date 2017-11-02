@@ -10,6 +10,11 @@ public enum PinState {
         public int getStepDescription() {
             return R.string.pin_code_step_create;
         }
+
+        @Override
+        public boolean hasForgotPin() {
+            return false;
+        }
     },
     DISABLE {
         @Override
@@ -38,6 +43,11 @@ public enum PinState {
         public int getStepDescription() {
             return R.string.pin_code_step_enable_confirm;
         }
+
+        @Override
+        public boolean hasForgotPin() {
+            return false;
+        }
     },
     UNLOCK {
         @Override
@@ -51,5 +61,9 @@ public enum PinState {
 
     public boolean canBack() {
         return false;
+    }
+
+    public boolean hasForgotPin() {
+        return true;
     }
 }
