@@ -1,21 +1,23 @@
-package com.dewarder.materialpin.managers;
+package com.dewarder.materialpin.ui;
 
 import android.support.annotation.NonNull;
 
 import com.dewarder.materialpin.DefaultConstants;
+import com.dewarder.materialpin.MaterialPin;
 import com.dewarder.materialpin.PinManager;
 import com.dewarder.materialpin.PinState;
 import com.dewarder.materialpin.PinType;
 import com.dewarder.materialpin.enums.KeyboardButton;
-import com.dewarder.materialpin.util.Callback;
-import com.dewarder.materialpin.util.CompositeFuture;
-import com.dewarder.materialpin.util.ExecutorHelper;
+import com.dewarder.materialpin.util.concurrent.Callback;
+import com.dewarder.materialpin.util.concurrent.CompositeFuture;
+import com.dewarder.materialpin.util.concurrent.ExecutorHelper;
 import com.dewarder.materialpin.util.Objects;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.dewarder.materialpin.PinState.CONFIRM;
+import static com.dewarder.materialpin.PinState.DISABLE;
 import static com.dewarder.materialpin.PinState.ENABLE;
 import static com.dewarder.materialpin.PinState.UNLOCK;
 
@@ -261,7 +263,9 @@ public class DefaultPinLockPresenter implements PinLockPresenter {
             @Override
             public void onSuccess(Void result) {
                 isCodeSuccessful = true;
-                mView.onPinSuccess(PinType.CODE, mAttempts + 1);
+                if (mState == DISABLE || mState == CONFIRM || mState == UNLOCK) {
+                    mView.onPinSuccess(PinType.CODE, mAttempts + 1);
+                }
                 mAttempts = 0;
             }
 

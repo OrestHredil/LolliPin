@@ -1,4 +1,4 @@
-package com.dewarder.materialpin.util;
+package com.dewarder.materialpin.util.application;
 
 import android.app.Activity;
 import android.app.Application;

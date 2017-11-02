@@ -13,16 +13,15 @@ import android.widget.TextView;
 
 import com.andexert.library.RippleAnimationListener;
 import com.andexert.library.RippleView;
-import com.dewarder.materialpin.managers.PinLockActivity;
+import com.dewarder.materialpin.ui.PinLockActivity;
 import com.github.lollipin.lib.R;
-import com.dewarder.materialpin.interfaces.OnKeyboardButtonClickListener;
 
 /**
  * Created by stoyan and oliviergoutay on 1/13/15.
  */
 public class KeyboardButtonView extends RelativeLayout implements RippleAnimationListener {
 
-    private OnKeyboardButtonClickListener mOnKeyboardButtonClickListener;
+    private KeyboardView.OnButtonClickListener mOnButtonClickListener;
 
     private Context mContext;
     private RippleView mRippleView;
@@ -49,7 +48,7 @@ public class KeyboardButtonView extends RelativeLayout implements RippleAnimatio
             String text = attributes.getString(R.styleable.KeyboardButtonView_lp_keyboard_button_text);
             Drawable image = attributes.getDrawable(R.styleable.KeyboardButtonView_lp_keyboard_button_image);
             boolean rippleEnabled = attributes.getBoolean(R.styleable.KeyboardButtonView_lp_keyboard_button_ripple_enabled, true);
-           
+
             attributes.recycle();
 
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -83,14 +82,14 @@ public class KeyboardButtonView extends RelativeLayout implements RippleAnimatio
      * Set by {@link com.dewarder.materialpin.views.KeyboardView} to returns events to
      * {@link PinLockActivity}
      */
-    public void setOnRippleAnimationEndListener(OnKeyboardButtonClickListener onKeyboardButtonClickListener) {
-        mOnKeyboardButtonClickListener = onKeyboardButtonClickListener;
+    public void setOnRippleAnimationEndListener(KeyboardView.OnButtonClickListener onKeyboardButtonClickListener) {
+        mOnButtonClickListener = onKeyboardButtonClickListener;
     }
 
     @Override
     public void onRippleAnimationEnd() {
-        if (mOnKeyboardButtonClickListener != null) {
-            mOnKeyboardButtonClickListener.onRippleAnimationEnd();
+        if (mOnButtonClickListener != null) {
+            mOnButtonClickListener.onRippleAnimationEnd();
         }
     }
 

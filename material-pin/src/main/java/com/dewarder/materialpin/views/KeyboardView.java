@@ -1,12 +1,13 @@
 package com.dewarder.materialpin.views;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 
 import com.dewarder.materialpin.enums.KeyboardButton;
-import com.dewarder.materialpin.interfaces.OnKeyboardButtonClickListener;
+import com.dewarder.materialpin.ui.PinLockActivity;
 import com.github.lollipin.lib.R;
 
 import java.util.ArrayList;
@@ -17,7 +18,32 @@ import java.util.List;
  */
 public class KeyboardView extends LinearLayout implements View.OnClickListener {
 
-    private OnKeyboardButtonClickListener mOnKeyboardButtonClickListener;
+    /**
+     * Created by stoyan and oliviergoutay on 1/13/15.
+     * The {@link PinLockActivity} will implement
+     * this in order to receive events from {@link com.dewarder.materialpin.views.KeyboardButtonView}
+     * and {@link com.dewarder.materialpin.views.KeyboardView}
+     */
+    public interface OnButtonClickListener {
+
+        /**
+         * Receive the click of a button, just after a {@link android.view.View.OnClickListener} has fired.
+         * Called before {@link #onRippleAnimationEnd()}.
+         *
+         * @param keyboardButtonEnum The organized enum of the clicked button
+         */
+        void onKeyboardButtonClicked(@NonNull KeyboardButton keyboardButtonEnum);
+
+        /**
+         * Receive the end of a {@link com.andexert.library.RippleView} animation using a
+         * {@link com.andexert.library.RippleAnimationListener} to determine the end.
+         * Called after {@link #onKeyboardButtonClicked(KeyboardButton)}.
+         */
+        void onRippleAnimationEnd();
+
+    }
+
+    private OnButtonClickListener mOnButtonClickListener;
 
     private final List<KeyboardButtonView> mButtons = new ArrayList<>();
 
@@ -54,9 +80,9 @@ public class KeyboardView extends LinearLayout implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        if (mOnKeyboardButtonClickListener != null) {
+        if (mOnButtonClickListener != null) {
             KeyboardButton button = KeyboardButton.fromId(v.getId());
-            mOnKeyboardButtonClickListener.onKeyboardButtonClicked(button);
+            mOnButtonClickListener.onKeyboardButtonClicked(button);
         }
     }
 
@@ -64,10 +90,10 @@ public class KeyboardView extends LinearLayout implements View.OnClickListener {
      * Set the {@link com.andexert.library.RippleAnimationListener} to the
      * {@link com.dewarder.materialpin.views.KeyboardButtonView}
      */
-    public void setKeyboardButtonClickedListener(OnKeyboardButtonClickListener onKeyboardButtonClickListener) {
-        mOnKeyboardButtonClickListener = onKeyboardButtonClickListener;
+    public void setKeyboardButtonClickedListener(OnButtonClickListener onButtonClickListener) {
+        mOnButtonClickListener = onButtonClickListener;
         for (KeyboardButtonView button : mButtons) {
-            button.setOnRippleAnimationEndListener(mOnKeyboardButtonClickListener);
+            button.setOnRippleAnimationEndListener(mOnButtonClickListener);
         }
     }
 }

@@ -6,7 +6,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.widget.Toast;
 
-import com.dewarder.materialpin.managers.PinLockActivity;
+import com.dewarder.materialpin.ui.PinLockActivity;
 
 import lollipin.orangegangsters.github.com.lollipin.R;
 import uk.me.lewisdeane.ldialogs.BaseDialog;

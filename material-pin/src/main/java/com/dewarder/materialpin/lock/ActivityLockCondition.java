@@ -1,4 +1,4 @@
-package com.dewarder.materialpin;
+package com.dewarder.materialpin.lock;
 
 import android.app.Activity;
 import android.support.annotation.NonNull;
@@ -29,8 +29,8 @@ final class ActivityLockCondition implements LockCondition {
                                   boolean lockAll) {
 
         validateConsistency(included, ignored, lockAll);
-        mIgnoredForLock = included;
-        mIncludedForLock = ignored;
+        mIgnoredForLock = ignored;
+        mIncludedForLock = included;
         mLockAll = lockAll;
     }
 

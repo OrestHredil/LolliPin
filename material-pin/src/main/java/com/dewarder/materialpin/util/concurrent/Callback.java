@@ -1,4 +1,4 @@
-package com.dewarder.materialpin.util;
+package com.dewarder.materialpin.util.concurrent;
 
 public interface Callback<T> {
 

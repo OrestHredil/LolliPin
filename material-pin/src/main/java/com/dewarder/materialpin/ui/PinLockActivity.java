@@ -1,4 +1,4 @@
-package com.dewarder.materialpin.managers;
+package com.dewarder.materialpin.ui;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -17,10 +17,11 @@ import android.widget.TextView;
 
 import com.dewarder.materialpin.DefaultConstants;
 import com.dewarder.materialpin.FingerprintManager;
+import com.dewarder.materialpin.LockManager;
+import com.dewarder.materialpin.MaterialPin;
 import com.dewarder.materialpin.PinState;
 import com.dewarder.materialpin.PinType;
 import com.dewarder.materialpin.enums.KeyboardButton;
-import com.dewarder.materialpin.interfaces.OnKeyboardButtonClickListener;
 import com.dewarder.materialpin.views.KeyboardView;
 import com.dewarder.materialpin.views.PinCodeRoundView;
 import com.github.lollipin.lib.R;
@@ -34,9 +35,9 @@ import static com.dewarder.materialpin.PinState.UNLOCK;
  * with {@link android.app.Activity#startActivityForResult(android.content.Intent, int)}).
  */
 public class PinLockActivity extends Activity implements
-        OnKeyboardButtonClickListener,
-        FingerprintHelper.Callback,
-        PinLockView {
+        PinLockView,
+        KeyboardView.OnButtonClickListener,
+        FingerprintHelper.Callback {
 
     public static final String TAG = PinLockActivity.class.getSimpleName();
     public static final String ACTION_CANCEL = TAG + ".actionCancelled";
@@ -281,7 +282,6 @@ public class PinLockActivity extends Activity implements
         mKeyboardView.startAnimation(animation);
     }
 
-    @CallSuper
     @Override
     public void onPinSuccess(@NonNull PinType type, int attempts) {
         setResult(RESULT_OK);

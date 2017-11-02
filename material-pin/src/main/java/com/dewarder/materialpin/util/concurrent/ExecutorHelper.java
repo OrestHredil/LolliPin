@@ -1,8 +1,10 @@
-package com.dewarder.materialpin.util;
+package com.dewarder.materialpin.util.concurrent;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+
+import com.dewarder.materialpin.util.Objects;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;

@@ -1,8 +1,9 @@
-package com.dewarder.materialpin.managers;
+package com.dewarder.materialpin;
 
 import android.app.Application;
 import android.support.annotation.NonNull;
 
+import com.dewarder.materialpin.ui.DefaultLockManager;
 import com.dewarder.materialpin.util.Objects;
 
 public final class MaterialPin {

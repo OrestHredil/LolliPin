@@ -6,7 +6,7 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
 
 import com.dewarder.materialpin.MainActivity;
-import com.dewarder.materialpin.managers.LockManager;
+import com.dewarder.materialpin.LockManager;
 import com.robotium.solo.Solo;
 
 /**

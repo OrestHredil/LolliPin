@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package com.dewarder.materialpin.managers;
+package com.dewarder.materialpin.ui;
 
 import android.annotation.TargetApi;
 import android.app.KeyguardManager;

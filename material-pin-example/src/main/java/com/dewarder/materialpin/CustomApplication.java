@@ -2,8 +2,9 @@ package com.dewarder.materialpin;
 
 import android.app.Application;
 
-import com.dewarder.materialpin.managers.LockManager;
-import com.dewarder.materialpin.managers.MaterialPin;
+import com.dewarder.materialpin.lock.LockCondition;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by oliviergoutay on 1/14/15.
@@ -17,6 +18,9 @@ public class CustomApplication extends Application {
 
         LockManager lockManager = MaterialPin.getLockManager();
         lockManager.addConditions(
-                ActivityLockCondition.only(MainActivity.class));
+                LockCondition.only(LockedCompatActivity.class)
+                        .or(LockCondition.timeout(10, TimeUnit.SECONDS)));
+        lockManager.lock();
+        lockManager.setPinLockActivity(CustomPinActivity.class);
     }
 }

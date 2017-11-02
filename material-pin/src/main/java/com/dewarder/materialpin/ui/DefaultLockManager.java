@@ -1,40 +1,44 @@
-package com.dewarder.materialpin.managers;
+package com.dewarder.materialpin.ui;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 
 import com.dewarder.materialpin.FingerprintManager;
-import com.dewarder.materialpin.LockCondition;
+import com.dewarder.materialpin.LockManager;
+import com.dewarder.materialpin.lock.LockCondition;
 import com.dewarder.materialpin.PinManager;
 import com.dewarder.materialpin.PinState;
 import com.dewarder.materialpin.storage.impl.DefaultPreferencesPinDataStorage;
 import com.dewarder.materialpin.util.Objects;
-import com.dewarder.materialpin.util.SimpleActivityCallbacks;
+import com.dewarder.materialpin.util.application.SimpleActivityCallbacks;
 
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DefaultLockManager implements LockManager {
 
-    private Context mContext;
+    private Application mApplication;
     private PinManager mPinManager;
     private FingerprintManager mFingerprintManager;
 
+    private Class<? extends Activity> mLastActivityClass;
     private Class<? extends Activity> mPinActivityClass;
     private AtomicBoolean mIsLocked = new AtomicBoolean(false);
 
     private final Set<LockCondition> mConditions = new CopyOnWriteArraySet<>();
+    private final Map<LockCondition, Application.ActivityLifecycleCallbacks> mConditionCallbackMap =
+            new HashMap<>();
 
     protected DefaultLockManager() {
     }
 
     public DefaultLockManager(Application application) {
-        mContext = application;
+        mApplication = application;
         mPinActivityClass = PinLockActivity.class;
         mPinManager = new DefaultPinManager(new DefaultPreferencesPinDataStorage(application));
         mFingerprintManager = new DefaultFingerprintManager();
@@ -58,14 +62,35 @@ public class DefaultLockManager implements LockManager {
 
     @Override
     public void addConditions(@NonNull LockCondition... conditions) {
-        Objects.requireNonNulls(conditions);
-        mConditions.addAll(Arrays.asList(conditions));
+        for (LockCondition condition : conditions) {
+            Objects.requireNonNull(condition);
+            mConditions.add(condition);
+
+            Application.ActivityLifecycleCallbacks callbacks = condition.onAttachToApplication();
+            if (callbacks != null) {
+                mConditionCallbackMap.put(condition, callbacks);
+                mApplication.registerActivityLifecycleCallbacks(callbacks);
+            }
+        }
     }
 
     @Override
     public void removeConditions(@NonNull LockCondition... conditions) {
-        Objects.requireNonNulls(conditions);
-        mConditions.removeAll(Arrays.asList(conditions));
+        for (LockCondition condition : conditions) {
+            Objects.requireNonNull(condition);
+            mConditions.remove(condition);
+
+            Application.ActivityLifecycleCallbacks callbacks = mConditionCallbackMap.remove(condition);
+            if (callbacks != null) {
+                mApplication.unregisterActivityLifecycleCallbacks(callbacks);
+            }
+        }
+
+    }
+
+    @Override
+    public void setPinLockActivity(@NonNull Class<? extends Activity> lockActivityClass) {
+        mPinActivityClass = Objects.requireNonNull(lockActivityClass);
     }
 
     @NonNull
@@ -86,16 +111,26 @@ public class DefaultLockManager implements LockManager {
     }
 
     protected void openPinActivity() {
-        Intent intent = new Intent(mContext, mPinActivityClass);
+        Intent intent = new Intent(mApplication, mPinActivityClass);
         //TODO:
         intent.putExtra("EXTRA_PIN_STATE", PinState.UNLOCK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mContext.startActivity(intent);
+        mApplication.startActivity(intent);
     }
 
     protected class ActivityLockHandler extends SimpleActivityCallbacks {
         @Override
         public void onActivityResumed(Activity activity) {
+            Class<? extends Activity> activityClass = activity.getClass();
+            if (activityClass.equals(mLastActivityClass)) {
+                return;
+            }
+            if (activityClass.isAssignableFrom(mPinActivityClass)) {
+                return;
+            }
+
+            mLastActivityClass = activityClass;
+
             if (!mIsLocked.get()) {
                 return;
             }
