@@ -17,7 +17,7 @@ public final class PairedActivityLifecycleCallbacks implements Application.Activ
     }
 
     @Nullable
-    static Application.ActivityLifecycleCallbacks create(
+    public static Application.ActivityLifecycleCallbacks create(
             Application.ActivityLifecycleCallbacks first,
             Application.ActivityLifecycleCallbacks second) {
 
